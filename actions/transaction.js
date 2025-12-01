@@ -221,44 +221,55 @@ export async function getUserTransactions(query = {}) {
 }
 
 // ⭐ Use this version — Python API Integration
-export async function scanReceipt(file) {
+export async function scanReceipt(formData) {
   try {
-    const arrayBuffer = await file.arrayBuffer();
-    const formData = new FormData();
-    const blob = new Blob([arrayBuffer], { type: file.type });
-    formData.append("file", blob, file.name);
+    console.log("scanReceipt action called");
+    const file = formData.get("file");
 
-    const response = await fetch("http://localhost:8000/upload", {
+    if (!file) {
+      throw new Error("No file provided to scanReceipt");
+    }
+
+    console.log("Sending file to API:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
+    // Forward the FormData directly to the Python API
+    const response = await fetch("http://127.0.0.1:8001/upload/", {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("Failed to scan receipt");
+      const errorText = await response.text();
+      console.error("Receipt scan failed. Status:", response.status, "Response:", errorText);
+      throw new Error(`Failed to scan receipt: ${response.status} ${errorText}`);
     }
 
     return await response.json();
   } catch (error) {
     console.error("Error scanning receipt:", error);
-    throw new Error("Failed to scan receipt");
+    throw new Error(`Failed to scan receipt: ${error.message}`);
   }
 }
 
 function calculateNextRecurringDate(startDate, interval) {
-  const date = new Date(startDate);
+const date = new Date(startDate);
 
   switch (interval) {
-    case "DAILY":
-      date.setDate(date.getDate() + 1);
+case "DAILY":
+date.setDate(date.getDate() + 1);
       break;
-    case "WEEKLY":
-      date.setDate(date.getDate() + 7);
+case "WEEKLY":
+date.setDate(date.getDate() + 7);
       break;
-    case "MONTHLY":
-      date.setMonth(date.getMonth() + 1);
+case "MONTHLY":
+date.setMonth(date.getMonth() + 1);
       break;
     case "YEARLY":
-      date.setFullYear(date.getFullYear() + 1);
+    date.setFullYear(date.getFullYear() + 1);
       break;
   }
 

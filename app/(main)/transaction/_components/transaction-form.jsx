@@ -54,25 +54,25 @@ export function AddTransactionForm({
     defaultValues:
       editMode && initialData
         ? {
-            type: initialData.type,
-            amount: initialData.amount.toString(),
-            description: initialData.description,
-            accountId: initialData.accountId,
-            category: initialData.category,
-            date: new Date(initialData.date),
-            isRecurring: initialData.isRecurring,
-            ...(initialData.recurringInterval && {
-              recurringInterval: initialData.recurringInterval,
-            }),
-          }
+          type: initialData.type,
+          amount: initialData.amount.toString(),
+          description: initialData.description,
+          accountId: initialData.accountId,
+          category: initialData.category,
+          date: new Date(initialData.date),
+          isRecurring: initialData.isRecurring,
+          ...(initialData.recurringInterval && {
+            recurringInterval: initialData.recurringInterval,
+          }),
+        }
         : {
-            type: "EXPENSE",
-            amount: "",
-            description: "",
-            accountId: accounts.find((ac) => ac.isDefault)?.id,
-            date: new Date(),
-            isRecurring: false,
-          },
+          type: "EXPENSE",
+          amount: "",
+          description: "",
+          accountId: accounts.find((ac) => ac.isDefault)?.id,
+          date: new Date(),
+          isRecurring: false,
+        },
   });
 
   const {
@@ -95,6 +95,7 @@ export function AddTransactionForm({
   };
 
   const handleScanComplete = (scannedData) => {
+    console.log("handleScanComplete triggered with:", scannedData);
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());
       setValue("date", new Date(scannedData.date));
@@ -102,7 +103,35 @@ export function AddTransactionForm({
         setValue("description", scannedData.description);
       }
       if (scannedData.category) {
-        setValue("category", scannedData.category);
+        const lowerCaseCategory = scannedData.category.toLowerCase();
+
+        // Search for exact match in category name or subcategories
+        const category = categories.find((c) => {
+          // Check category name
+          if (c.name.toLowerCase() === lowerCaseCategory) return true;
+
+          // Check subcategories if they exist
+          if (c.subcategories) {
+            return c.subcategories.some(
+              (sub) => sub.toLowerCase() === lowerCaseCategory
+            );
+          }
+          return false;
+        });
+
+        if (category) {
+          setValue("category", category.id);
+        } else {
+          console.log("Category not found:", scannedData.category);
+          // Optional: Set to "other-expense" or "other-income" based on type
+          // setValue("category", scannedData.transaction_type === "EXPENSE" ? "other-expense" : "other-income");
+        }
+      }
+      if (scannedData.transaction_type) {
+        setValue("type", scannedData.transaction_type.toUpperCase());
+      }
+      if (scannedData.is_recurring !== undefined) {
+        setValue("isRecurring", scannedData.is_recurring);
       }
       toast.success("Receipt scanned successfully");
     }
@@ -172,7 +201,7 @@ export function AddTransactionForm({
           <label className="text-sm font-medium">Account</label>
           <Select
             onValueChange={(value) => setValue("accountId", value)}
-            defaultValue={getValues("accountId")}
+            value={watch("accountId")}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select account" />
@@ -204,7 +233,7 @@ export function AddTransactionForm({
         <label className="text-sm font-medium">Category</label>
         <Select
           onValueChange={(value) => setValue("category", value)}
-          defaultValue={getValues("category")}
+          value={watch("category")}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
