@@ -220,7 +220,7 @@ export async function getUserTransactions(query = {}) {
   }
 }
 
-// ⭐ Use this version — Python API Integration
+// ⭐ Updated version — Uses Render Backend API
 export async function scanReceipt(formData) {
   try {
     console.log("scanReceipt action called");
@@ -236,8 +236,10 @@ export async function scanReceipt(formData) {
       size: file.size,
     });
 
-    // Forward the FormData directly to the Python API
-    const response = await fetch("http://127.0.0.1:8000/upload/", {
+    // 🔥 Use the Render backend URL from .env.local
+    const API_BASE = process.env.NEXT_PUBLIC_RECEIPT_API_URL;
+
+    const response = await fetch(`${API_BASE}/upload/`, {
       method: "POST",
       body: formData,
     });
