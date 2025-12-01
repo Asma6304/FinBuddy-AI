@@ -122,6 +122,22 @@ async def upload_and_fill(file: UploadFile = File(...)):
         Analyze this receipt OCR data:
         {json.dumps(result_data)}
         based on the given receipt information try to fill in the categories for a personal finance app like category, or the account type.
+        The category MUST be one of the following exactly:
+        - Housing
+        - Transportation
+        - Groceries
+        - Utilities
+        - Entertainment
+        - Food
+        - Shopping
+        - Healthcare
+        - Education
+        - Personal Care
+        - Travel
+        - Insurance
+        - Gifts & Donations
+        - Bills & Fees
+        - Other Expenses
         Map it to this JSON structure:
         {{
             "transaction_type": "Expense" | "Income",
