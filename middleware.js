@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
+// Protect these routes only
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/account(.*)",
@@ -12,11 +13,10 @@ export default clerkMiddleware((auth, req) => {
   }
 });
 
-// IMPORTANT: This matcher MUST be EXACT for Clerk apps
+// ✅ This matcher avoids capturing groups (Next.js 15 requirement)
 export const config = {
   matcher: [
-    "/((?!.+\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2)$|_next).*)",
-    "/",
-    "/(api|trpc)(.*)",
+    "/((?!_next/).*)",        // run on all app routes except _next
+    "/(api|trpc)(.*)",        // allow API routing
   ],
 };
