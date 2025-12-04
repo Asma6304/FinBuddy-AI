@@ -12,9 +12,11 @@ export default clerkMiddleware((auth, req) => {
   }
 });
 
+// IMPORTANT: This matcher MUST be EXACT for Clerk apps
 export const config = {
   matcher: [
-    "/((?!.+\\.[\\w]+$|_next).*)",
+    "/((?!.+\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2)$|_next).*)",
+    "/",
     "/(api|trpc)(.*)",
   ],
 };
